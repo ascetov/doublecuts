@@ -770,7 +770,15 @@ h1,h2,h3,h4{
 
 @media (max-width:420px){
   .container{ padding:0 15px; }
-  .team__grid{ grid-template-columns:1fr; }
+  /* Барберы остаются по двое в ряд даже на узких экранах —
+     в одну колонку список получается неоправданно длинным. */
+  .team__grid{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .master__body{ padding:14px 12px 15px; }
+  .master__name{ font-size:17px; }
+  .master__role{ font-size:11.5px; }
+  .master__exp{ font-size:12px; margin-bottom:10px; }
+  .master__badge{ left:8px; top:8px; padding:4px 9px; font-size:10px; }
+  .master .btn--sm{ padding:0 10px; font-size:12px; letter-spacing:.04em; }
   .vacancy__grid{ grid-template-columns:1fr; }
   .price-row__vals{ grid-template-columns:1fr 1fr; }
   .gallery__grid{ grid-auto-columns:82vw; }
