@@ -281,6 +281,9 @@
     masterValueEl.textContent = li.dataset.value;
     masterAvatarEl.innerHTML = liAvatar.innerHTML;
     masterAvatarEl.classList.toggle('master-picker__avatar--any', liAvatar.classList.contains('master-picker__avatar--any'));
+    /* Цена услуг зависит от уровня мастера — пересчитываем список услуг.
+       renderServicesSummary объявлена ниже через function-hoisting, вызов здесь безопасен. */
+    renderServicesSummary();
   }
 
   masterToggle.addEventListener('click', function () {
@@ -330,14 +333,48 @@
     tab.addEventListener('click', function () { showServicesTab(tab.dataset.servicesTab); });
   });
 
+  /* Цена зависит от уровня мастера: барбер дешевле, бренд-барбер дороже.
+     Пока конкретный мастер не выбран — показываем вилку цен по всем уровням. */
+  var TIER_ATTR = { barber: 'priceBarber', senior: 'priceSenior', chef: 'priceChef', brand: 'priceBrand' };
+  var TIERS = ['barber', 'senior', 'chef', 'brand'];
+
+  function masterTierFromValue(value) {
+    if (!value || value === 'Любой свободный') return null;
+    if (value.indexOf('бренд-барбер') > -1) return 'brand';
+    if (value.indexOf('шеф-барбер') > -1) return 'chef';
+    if (value.indexOf('старший барбер') > -1) return 'senior';
+    return 'barber';
+  }
+
+  function tierPrice(cb, tier) { return Number(cb.dataset[TIER_ATTR[tier]]) || 0; }
+
+  function formatPrice(n) { return n.toLocaleString('ru-RU') + ' ₽'; }
+
+  function priceRangeText(cb) {
+    var prices = TIERS.map(function (t) { return tierPrice(cb, t); });
+    var min = Math.min.apply(null, prices), max = Math.max.apply(null, prices);
+    return min === max ? formatPrice(min) : min.toLocaleString('ru-RU') + '–' + formatPrice(max);
+  }
+
+  function updateServicePriceLabels() {
+    var tier = masterTierFromValue(masterInput.value);
+    serviceCheckboxes.forEach(function (cb) {
+      var priceEl = cb.closest('.services-picker__item').querySelector('.services-picker__price');
+      priceEl.textContent = tier ? formatPrice(tierPrice(cb, tier)) : priceRangeText(cb);
+    });
+  }
+
   function renderServicesSummary() {
+    var tier = masterTierFromValue(masterInput.value);
     var checked = serviceCheckboxes.filter(function (cb) { return cb.checked; });
     servicesInput.value = checked.map(function (cb) { return cb.dataset.service; }).join(', ');
 
     servicesChips.innerHTML = '';
     var total = 0;
     checked.forEach(function (cb) {
-      total += Number(cb.dataset.price) || 0;
+      /* Пока мастер не выбран — считаем итог по минимальному (барберскому) тарифу
+         и помечаем его как «от», чтобы не обещать точную сумму раньше времени. */
+      total += tier ? tierPrice(cb, tier) : tierPrice(cb, 'barber');
 
       var chip = document.createElement('span');
       chip.className = 'services-picker__chip';
@@ -362,7 +399,8 @@
 
     servicesSummary.hidden = checked.length === 0;
     servicesHint.hidden = checked.length > 0;
-    servicesTotal.textContent = 'от ' + total.toLocaleString('ru-RU') + ' ₽';
+    servicesTotal.textContent = (tier ? '' : 'от ') + formatPrice(total);
+    updateServicePriceLabels();
   }
 
   serviceCheckboxes.forEach(function (cb) {
@@ -377,12 +415,11 @@
   /* Сброс формы не трогает наши кастомные списки (мастер, услуги) —
      синхронизируем их вручную, принудительно возвращая к пустому состоянию. */
   form.addEventListener('reset', function () {
-    selectMasterOption(masterDefaultOption);
     serviceCheckboxes.forEach(function (cb) {
       cb.checked = false;
       cb.closest('.services-picker__item').classList.remove('is-checked');
     });
-    renderServicesSummary();
+    selectMasterOption(masterDefaultOption); /* заодно пересчитает и цены услуг */
     showServicesTab('cut');
   });
 
@@ -416,7 +453,7 @@
     doneStep.hidden = true;
     modal.hidden = false;
     document.body.classList.add('no-scroll');
-    showBookingTab('schedule');
+    showBookingTab('request');
   }
 
   function closeBooking() {

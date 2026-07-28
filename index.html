@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- ?v= сбрасывает кэш браузера после правок: меняйте номер при каждом обновлении файла -->
-<link rel="stylesheet" href="css/style.css?v=10">
+<link rel="stylesheet" href="css/style.css?v=11">
 </head>
 <body>
 
@@ -1074,11 +1074,11 @@
       <p class="modal__master" id="booking-master" hidden></p>
 
       <div class="modal__tabs" role="tablist">
-        <button class="modal__tab is-active" type="button" role="tab" aria-selected="true" data-tab="schedule">Выбрать время</button>
-        <button class="modal__tab" type="button" role="tab" aria-selected="false" data-tab="request">Оставить заявку</button>
+        <button class="modal__tab is-active" type="button" role="tab" aria-selected="true" data-tab="request">Оставить заявку</button>
+        <button class="modal__tab" type="button" role="tab" aria-selected="false" data-tab="schedule">Выбрать время в YClients</button>
       </div>
 
-      <div class="modal__panel" data-panel="schedule">
+      <div class="modal__panel" data-panel="schedule" hidden>
         <p class="modal__sub">
           Реальное расписание барбершопа: выберите мастера и услугу — система покажет
           его занятые и свободные окна на ближайшие дни.
@@ -1096,7 +1096,7 @@
         </p>
       </div>
 
-      <div class="modal__panel" data-panel="request" hidden>
+      <div class="modal__panel" data-panel="request">
         <p class="modal__sub">Оставьте заявку — администратор перезвонит и подтвердит удобное время.</p>
 
         <form class="form" id="booking-form" novalidate>
@@ -1113,169 +1113,8 @@
           </div>
 
           <div class="form__row">
-            <span class="form__label" id="services-picker-label">Услуги</span>
-
-            <div class="services-picker" id="services-picker">
-              <div class="services-picker__tabs" role="tablist" aria-labelledby="services-picker-label">
-                <button type="button" class="services-picker__tab is-active" role="tab" aria-selected="true" data-services-tab="cut">Стрижки</button>
-                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="beard">Борода</button>
-                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="combo">Комбо</button>
-                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="face">Уход за лицом</button>
-                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="extra">Доп.</button>
-              </div>
-
-              <div class="services-picker__panel" data-services-panel="cut">
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Мужская стрижка" data-price="1200">
-                  <span class="services-picker__name">Мужская стрижка</span>
-                  <span class="services-picker__price">от 1200 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Коррекция стрижки" data-price="900">
-                  <span class="services-picker__name">Коррекция стрижки</span>
-                  <span class="services-picker__price">от 900 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Стрижка машинкой" data-price="900">
-                  <span class="services-picker__name">Стрижка машинкой</span>
-                  <span class="services-picker__price">от 900 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Детская стрижка" data-price="1200">
-                  <span class="services-picker__name">Детская стрижка</span>
-                  <span class="services-picker__price">от 1200 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Бритьё головы электробритвой" data-price="600">
-                  <span class="services-picker__name">Бритьё головы электробритвой</span>
-                  <span class="services-picker__price">от 600 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Бритьё головы опасной бритвой" data-price="1200">
-                  <span class="services-picker__name">Бритьё головы опасной бритвой</span>
-                  <span class="services-picker__price">от 1200 ₽</span>
-                </label>
-              </div>
-
-              <div class="services-picker__panel" data-services-panel="beard" hidden>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Моделирование бороды" data-price="900">
-                  <span class="services-picker__name">Моделирование бороды</span>
-                  <span class="services-picker__price">от 900 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Стрижка бороды" data-price="600">
-                  <span class="services-picker__name">Стрижка бороды</span>
-                  <span class="services-picker__price">от 600 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Бритьё шейвером" data-price="600">
-                  <span class="services-picker__name">Бритьё шейвером</span>
-                  <span class="services-picker__price">от 600 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Бритьё опасной бритвой" data-price="1200">
-                  <span class="services-picker__name">Бритьё опасной бритвой</span>
-                  <span class="services-picker__price">от 1200 ₽</span>
-                </label>
-              </div>
-
-              <div class="services-picker__panel" data-services-panel="combo" hidden>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Стрижка «отец + сын»" data-price="1800">
-                  <span class="services-picker__name">Стрижка «отец + сын»</span>
-                  <span class="services-picker__price">от 1800 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Стрижка + борода + воск" data-price="1500">
-                  <span class="services-picker__name">Стрижка + борода + воск</span>
-                  <span class="services-picker__price">от 1500 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Стрижка + моделирование бороды + воск" data-price="1700">
-                  <span class="services-picker__name">Стрижка + моделирование бороды + воск</span>
-                  <span class="services-picker__price">от 1700 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Стрижка + уход Volcano + воск" data-price="1700">
-                  <span class="services-picker__name">Стрижка + уход Volcano + воск</span>
-                  <span class="services-picker__price">от 1700 ₽</span>
-                </label>
-              </div>
-
-              <div class="services-picker__panel" data-services-panel="face" hidden>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Премиум уход за лицом" data-price="900">
-                  <span class="services-picker__name">Премиум уход за лицом</span>
-                  <span class="services-picker__price">от 900 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Экспресс-уход Volcano" data-price="200">
-                  <span class="services-picker__name">Экспресс-уход Volcano</span>
-                  <span class="services-picker__price">от 200 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Уход вокруг глаз Volcano" data-price="400">
-                  <span class="services-picker__name">Уход вокруг глаз Volcano</span>
-                  <span class="services-picker__price">от 400 ₽</span>
-                </label>
-              </div>
-
-              <div class="services-picker__panel" data-services-panel="extra" hidden>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Восковая депиляция" data-price="200">
-                  <span class="services-picker__name">Восковая депиляция</span>
-                  <span class="services-picker__price">от 200 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Воск — комплекс" data-price="300">
-                  <span class="services-picker__name">Воск — комплекс</span>
-                  <span class="services-picker__price">от 300 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Премиум пилинг головы" data-price="600">
-                  <span class="services-picker__name">Премиум пилинг головы</span>
-                  <span class="services-picker__price">от 600 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Химическая завивка" data-price="3500">
-                  <span class="services-picker__name">Химическая завивка</span>
-                  <span class="services-picker__price">от 3500 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Консультация по завивке" data-price="400">
-                  <span class="services-picker__name">Консультация по завивке</span>
-                  <span class="services-picker__price">от 400 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Тонирование головы" data-price="700">
-                  <span class="services-picker__name">Тонирование головы</span>
-                  <span class="services-picker__price">от 700 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Тонирование бороды" data-price="700">
-                  <span class="services-picker__name">Тонирование бороды</span>
-                  <span class="services-picker__price">от 700 ₽</span>
-                </label>
-                <label class="services-picker__item">
-                  <input type="checkbox" data-service="Профессиональная укладка" data-price="400">
-                  <span class="services-picker__name">Профессиональная укладка</span>
-                  <span class="services-picker__price">от 400 ₽</span>
-                </label>
-              </div>
-
-              <p class="services-picker__hint" id="services-hint">Отметьте одну или несколько услуг</p>
-              <div class="services-picker__summary" id="services-summary" hidden>
-                <div class="services-picker__chips" id="services-chips"></div>
-                <div class="services-picker__total">Итого: <b id="services-total">от 0 ₽</b></div>
-              </div>
-            </div>
-
-            <input type="hidden" name="services" id="f-services" value="">
-          </div>
-
-          <div class="form__row">
             <span class="form__label" id="master-picker-label">Мастер</span>
+            <p class="form__hint">Цена зависит от уровня мастера — выберите его, и цены услуг ниже пересчитаются.</p>
             <div class="master-picker" id="master-picker">
               <button type="button" class="master-picker__toggle" id="master-picker-toggle"
                       aria-haspopup="listbox" aria-expanded="false"
@@ -1328,6 +1167,168 @@
 
               <input type="hidden" name="master" id="f-master" value="Любой свободный">
             </div>
+          </div>
+
+          <div class="form__row">
+            <span class="form__label" id="services-picker-label">Услуги</span>
+
+            <div class="services-picker" id="services-picker">
+              <div class="services-picker__tabs" role="tablist" aria-labelledby="services-picker-label">
+                <button type="button" class="services-picker__tab is-active" role="tab" aria-selected="true" data-services-tab="cut">Стрижки</button>
+                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="beard">Борода</button>
+                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="combo">Комбо</button>
+                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="face">Уход за лицом</button>
+                <button type="button" class="services-picker__tab" role="tab" aria-selected="false" data-services-tab="extra">Доп.</button>
+              </div>
+
+              <div class="services-picker__panel" data-services-panel="cut">
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Мужская стрижка" data-price-barber="1200" data-price-senior="1400" data-price-chef="1600" data-price-brand="1800">
+                  <span class="services-picker__name">Мужская стрижка</span>
+                  <span class="services-picker__price">1200–1800 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Коррекция стрижки" data-price-barber="900" data-price-senior="1100" data-price-chef="1200" data-price-brand="1400">
+                  <span class="services-picker__name">Коррекция стрижки</span>
+                  <span class="services-picker__price">900–1400 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Стрижка машинкой" data-price-barber="900" data-price-senior="1100" data-price-chef="1200" data-price-brand="1400">
+                  <span class="services-picker__name">Стрижка машинкой</span>
+                  <span class="services-picker__price">900–1400 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Детская стрижка" data-price-barber="1200" data-price-senior="1400" data-price-chef="1600" data-price-brand="1800">
+                  <span class="services-picker__name">Детская стрижка</span>
+                  <span class="services-picker__price">1200–1800 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Бритьё головы электробритвой" data-price-barber="600" data-price-senior="700" data-price-chef="800" data-price-brand="900">
+                  <span class="services-picker__name">Бритьё головы электробритвой</span>
+                  <span class="services-picker__price">600–900 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Бритьё головы опасной бритвой" data-price-barber="1200" data-price-senior="1400" data-price-chef="1600" data-price-brand="1800">
+                  <span class="services-picker__name">Бритьё головы опасной бритвой</span>
+                  <span class="services-picker__price">1200–1800 ₽</span>
+                </label>
+              </div>
+
+              <div class="services-picker__panel" data-services-panel="beard" hidden>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Моделирование бороды" data-price-barber="900" data-price-senior="1100" data-price-chef="1200" data-price-brand="1400">
+                  <span class="services-picker__name">Моделирование бороды</span>
+                  <span class="services-picker__price">900–1400 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Стрижка бороды" data-price-barber="600" data-price-senior="700" data-price-chef="800" data-price-brand="900">
+                  <span class="services-picker__name">Стрижка бороды</span>
+                  <span class="services-picker__price">600–900 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Бритьё шейвером" data-price-barber="600" data-price-senior="700" data-price-chef="800" data-price-brand="900">
+                  <span class="services-picker__name">Бритьё шейвером</span>
+                  <span class="services-picker__price">600–900 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Бритьё опасной бритвой" data-price-barber="1200" data-price-senior="1400" data-price-chef="1600" data-price-brand="1800">
+                  <span class="services-picker__name">Бритьё опасной бритвой</span>
+                  <span class="services-picker__price">1200–1800 ₽</span>
+                </label>
+              </div>
+
+              <div class="services-picker__panel" data-services-panel="combo" hidden>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Стрижка «отец + сын»" data-price-barber="1800" data-price-senior="2200" data-price-chef="2600" data-price-brand="3000">
+                  <span class="services-picker__name">Стрижка «отец + сын»</span>
+                  <span class="services-picker__price">1800–3000 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Стрижка + борода + воск" data-price-barber="1500" data-price-senior="2000" data-price-chef="2500" data-price-brand="3000">
+                  <span class="services-picker__name">Стрижка + борода + воск</span>
+                  <span class="services-picker__price">1500–3000 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Стрижка + моделирование бороды + воск" data-price-barber="1700" data-price-senior="2200" data-price-chef="2700" data-price-brand="3200">
+                  <span class="services-picker__name">Стрижка + моделирование бороды + воск</span>
+                  <span class="services-picker__price">1700–3200 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Стрижка + уход Volcano + воск" data-price-barber="1700" data-price-senior="2200" data-price-chef="2400" data-price-brand="2900">
+                  <span class="services-picker__name">Стрижка + уход Volcano + воск</span>
+                  <span class="services-picker__price">1700–2900 ₽</span>
+                </label>
+              </div>
+
+              <div class="services-picker__panel" data-services-panel="face" hidden>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Премиум уход за лицом" data-price-barber="900" data-price-senior="1100" data-price-chef="1100" data-price-brand="1300">
+                  <span class="services-picker__name">Премиум уход за лицом</span>
+                  <span class="services-picker__price">900–1300 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Экспресс-уход Volcano" data-price-barber="200" data-price-senior="200" data-price-chef="200" data-price-brand="200">
+                  <span class="services-picker__name">Экспресс-уход Volcano</span>
+                  <span class="services-picker__price">200 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Уход вокруг глаз Volcano" data-price-barber="400" data-price-senior="500" data-price-chef="500" data-price-brand="600">
+                  <span class="services-picker__name">Уход вокруг глаз Volcano</span>
+                  <span class="services-picker__price">400–600 ₽</span>
+                </label>
+              </div>
+
+              <div class="services-picker__panel" data-services-panel="extra" hidden>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Восковая депиляция" data-price-barber="200" data-price-senior="300" data-price-chef="300" data-price-brand="400">
+                  <span class="services-picker__name">Восковая депиляция</span>
+                  <span class="services-picker__price">200–400 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Воск — комплекс" data-price-barber="300" data-price-senior="400" data-price-chef="400" data-price-brand="500">
+                  <span class="services-picker__name">Воск — комплекс</span>
+                  <span class="services-picker__price">300–500 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Премиум пилинг головы" data-price-barber="600" data-price-senior="700" data-price-chef="800" data-price-brand="900">
+                  <span class="services-picker__name">Премиум пилинг головы</span>
+                  <span class="services-picker__price">600–900 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Химическая завивка" data-price-barber="3500" data-price-senior="4000" data-price-chef="4500" data-price-brand="5000">
+                  <span class="services-picker__name">Химическая завивка</span>
+                  <span class="services-picker__price">3500–5000 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Консультация по завивке" data-price-barber="400" data-price-senior="500" data-price-chef="600" data-price-brand="700">
+                  <span class="services-picker__name">Консультация по завивке</span>
+                  <span class="services-picker__price">400–700 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Тонирование головы" data-price-barber="700" data-price-senior="800" data-price-chef="900" data-price-brand="1000">
+                  <span class="services-picker__name">Тонирование головы</span>
+                  <span class="services-picker__price">700–1000 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Тонирование бороды" data-price-barber="700" data-price-senior="800" data-price-chef="900" data-price-brand="1000">
+                  <span class="services-picker__name">Тонирование бороды</span>
+                  <span class="services-picker__price">700–1000 ₽</span>
+                </label>
+                <label class="services-picker__item">
+                  <input type="checkbox" data-service="Профессиональная укладка" data-price-barber="400" data-price-senior="500" data-price-chef="600" data-price-brand="700">
+                  <span class="services-picker__name">Профессиональная укладка</span>
+                  <span class="services-picker__price">400–700 ₽</span>
+                </label>
+              </div>
+
+              <p class="services-picker__hint" id="services-hint">Отметьте одну или несколько услуг</p>
+              <div class="services-picker__summary" id="services-summary" hidden>
+                <div class="services-picker__chips" id="services-chips"></div>
+                <div class="services-picker__total">Итого: <b id="services-total">0 ₽</b></div>
+              </div>
+            </div>
+
+            <input type="hidden" name="services" id="f-services" value="">
           </div>
 
           <div class="form__row">
@@ -1390,6 +1391,6 @@
 }
 </script>
 
-<script src="js/main.js?v=10"></script>
+<script src="js/main.js?v=11"></script>
 </body>
 </html>
