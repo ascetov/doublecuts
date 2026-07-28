@@ -407,6 +407,28 @@ h1,h2,h3,h4{
 
 .prices__cta{ margin-top:28px; display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
 
+/* Кнопка записи со способами оплаты внутри — единый кликабельный блок */
+.btn--cta{ flex-direction:column; gap:5px; padding:14px 30px; }
+.btn__sub{
+  display:flex; align-items:center; gap:7px;
+  font-family:Manrope, Arial, sans-serif; font-size:11.5px; font-weight:400;
+  letter-spacing:.02em; text-transform:none; color:rgba(255,255,255,.75);
+}
+.btn__sub img{ height:12px; width:auto; display:block; }
+
+/* ---------------- Прайс: длинные списки сворачиваем по умолчанию ---------------- */
+.price-row--collapsed{ display:none; }
+.price-list__toggle{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; margin-top:14px; min-height:46px;
+  background:transparent; border:1px dashed var(--line-strong); border-radius:var(--radius);
+  font-family:Oswald, Arial, sans-serif; font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted); cursor:pointer; transition:all .2s;
+}
+.price-list__toggle:hover{ color:var(--brand-pale); border-color:var(--brand-light); background:rgba(139,70,201,.08); }
+.price-list__toggle::after{ content:"▾"; font-size:11px; transition:transform .25s; }
+.price-list__toggle[aria-expanded="true"]::after{ transform:rotate(180deg); }
+
 /* ---------------- Акции ---------------- */
 
 .promos{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
@@ -787,6 +809,9 @@ h1,h2,h3,h4{
   /* Прайс: таблица -> карточки */
   .price-legend{ display:none; }
   .price-list{ border:none; display:grid; gap:12px; }
+  /* display:grid выше побеждает встроенное [hidden]{display:none} браузера —
+     без этой строки все категории цен показывались бы одновременно на мобиле. */
+  .price-list[hidden]{ display:none; }
   .price-row{
     display:block; padding:18px 18px 14px;
     border:1px solid var(--line); border-radius:var(--radius);

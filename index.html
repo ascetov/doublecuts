@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- ?v= сбрасывает кэш браузера после правок: меняйте номер при каждом обновлении файла -->
-<link rel="stylesheet" href="css/style.css?v=6">
+<link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
 
@@ -680,8 +680,15 @@
     </div>
 
     <div class="prices__cta">
-      <button class="btn btn--primary js-booking" type="button">Записаться онлайн</button>
-      <span class="section__note" style="margin:0">Оплата: СБП, «Мир», Visa</span>
+      <button class="btn btn--primary btn--cta js-booking" type="button" aria-label="Записаться онлайн">
+        <span class="btn__title">Записаться онлайн</span>
+        <span class="btn__sub" aria-hidden="true">
+          Оплата
+          <img src="img/sbp.svg" alt="" width="24" height="12" loading="lazy">
+          <img src="img/mir.svg" alt="" width="39" height="12" loading="lazy">
+          <img src="img/visa.svg" alt="" width="37" height="12" loading="lazy">
+        </span>
+      </button>
     </div>
   </div>
 </section>
@@ -1240,6 +1247,6 @@
 }
 </script>
 
-<script src="js/main.js?v=6"></script>
+<script src="js/main.js?v=8"></script>
 </body>
 </html>

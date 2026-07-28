@@ -92,6 +92,47 @@
     });
   });
 
+  /* ---------------- Прайс: длинные списки сворачиваем по умолчанию ---------------- */
+  var PRICE_COLLAPSE_LIMIT = 4;
+
+  function pluralizeRu(n, one, few, many) {
+    var mod10 = n % 10, mod100 = n % 100;
+    if (mod10 === 1 && mod100 !== 11) return one;
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+    return many;
+  }
+
+  pricePanels.forEach(function (list) {
+    var rows = Array.prototype.slice.call(list.querySelectorAll('.price-row'));
+    if (rows.length <= PRICE_COLLAPSE_LIMIT) return;
+
+    var hiddenRows = rows.slice(PRICE_COLLAPSE_LIMIT);
+    hiddenRows.forEach(function (r) { r.classList.add('price-row--collapsed'); });
+
+    var toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'price-list__toggle';
+    toggle.setAttribute('aria-expanded', 'false');
+
+    function renderLabel(expanded) {
+      var n = hiddenRows.length;
+      toggle.textContent = expanded
+        ? 'Свернуть список'
+        : 'Показать ещё ' + n + ' ' + pluralizeRu(n, 'услугу', 'услуги', 'услуг');
+    }
+    renderLabel(false);
+
+    toggle.addEventListener('click', function () {
+      var expand = toggle.getAttribute('aria-expanded') !== 'true';
+      hiddenRows.forEach(function (r) { r.classList.toggle('price-row--collapsed', !expand); });
+      toggle.setAttribute('aria-expanded', String(expand));
+      renderLabel(expand);
+      if (!expand) list.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    list.appendChild(toggle);
+  });
+
   /* ---------------- Галерея: стрелки ---------------- */
   var galGrid = document.getElementById('gallery-grid');
   function galStep() {
