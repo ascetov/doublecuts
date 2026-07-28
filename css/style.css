@@ -242,24 +242,28 @@ h1,h2,h3,h4{
 }
 .hero__actions{ display:flex; flex-wrap:wrap; gap:14px; }
 
+/* Компактная карточка адрес/телефон/часы — сразу под кнопками «Записаться» и «Позвонить» */
 .hero__info{
   position:relative; z-index:1;
-  border-top:1px solid var(--line);
+  margin-top:36px; max-width:640px;
+  border:1px solid var(--line); border-radius:var(--radius);
   display:grid; grid-template-columns:repeat(3,1fr);
+  background:rgba(255,255,255,.02);
 }
 .hero__info a, .hero__info div{
-  padding:22px 24px 26px;
+  padding:16px 20px 18px;
   border-left:1px solid var(--line);
   transition:background .22s;
 }
+.hero__info a:first-child, .hero__info div:first-child{ border-left:none; }
 .hero__info a:hover{ background:rgba(139,70,201,.1); }
 .hero__info span{
-  display:block; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--text-muted); margin-bottom:6px;
+  display:block; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-muted); margin-bottom:5px;
 }
 .hero__info b{
   font-family:Oswald, Arial, sans-serif; font-weight:400;
-  font-size:17px; letter-spacing:.03em;
+  font-size:15px; letter-spacing:.02em;
 }
 
 /* ---------------- Секции ---------------- */
@@ -715,8 +719,8 @@ h1,h2,h3,h4{
   .promos{ grid-template-columns:1fr; }
   .products__grid{ grid-template-columns:repeat(3,1fr); }
   .vacancy__grid{ grid-template-columns:repeat(2,1fr); }
-  .hero__info{ grid-template-columns:1fr; }
-  .hero__info a, .hero__info div{ border-left:none; border-bottom:1px solid var(--line); padding:16px 0 18px; }
+  .hero__info{ grid-template-columns:1fr; max-width:none; }
+  .hero__info a, .hero__info div{ border-left:none; border-bottom:1px solid var(--line); padding:14px 18px; }
   .hero__info a:last-child, .hero__info div:last-child{ border-bottom:none; }
   .gal-arrows{ display:none; }
   .modal{ padding:0; align-items:flex-end; }
