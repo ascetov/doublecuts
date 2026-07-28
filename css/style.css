@@ -416,19 +416,6 @@ h1,h2,h3,h4{
 }
 .btn__sub img{ height:12px; width:auto; display:block; }
 
-/* ---------------- Прайс: длинные списки сворачиваем по умолчанию ---------------- */
-.price-row--collapsed{ display:none; }
-.price-list__toggle{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  width:100%; margin-top:14px; min-height:46px;
-  background:transparent; border:1px dashed var(--line-strong); border-radius:var(--radius);
-  font-family:Oswald, Arial, sans-serif; font-size:13px; letter-spacing:.08em; text-transform:uppercase;
-  color:var(--text-muted); cursor:pointer; transition:all .2s;
-}
-.price-list__toggle:hover{ color:var(--brand-pale); border-color:var(--brand-light); background:rgba(139,70,201,.08); }
-.price-list__toggle::after{ content:"▾"; font-size:11px; transition:transform .25s; }
-.price-list__toggle[aria-expanded="true"]::after{ transform:rotate(180deg); }
-
 /* ---------------- Акции ---------------- */
 
 .promos{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
