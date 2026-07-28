@@ -347,10 +347,84 @@
     if (!masterList.hidden && !masterPicker.contains(e.target)) closeMasterList();
   });
 
-  /* Сброс формы возвращает скрытый input к значению по умолчанию,
-     но не трогает наш кастомный список — синхронизируем вручную. */
+  /* ---------------- Выбор нескольких услуг сразу ---------------- */
+  var servicesPicker = document.getElementById('services-picker');
+  var serviceTabs = Array.prototype.slice.call(servicesPicker.querySelectorAll('.services-picker__tab'));
+  var servicePanels = Array.prototype.slice.call(servicesPicker.querySelectorAll('[data-services-panel]'));
+  var serviceCheckboxes = Array.prototype.slice.call(servicesPicker.querySelectorAll('input[type="checkbox"]'));
+  var servicesInput = document.getElementById('f-services');
+  var servicesSummary = document.getElementById('services-summary');
+  var servicesChips = document.getElementById('services-chips');
+  var servicesTotal = document.getElementById('services-total');
+  var servicesHint = document.getElementById('services-hint');
+
+  function showServicesTab(name) {
+    serviceTabs.forEach(function (t) {
+      var active = t.dataset.servicesTab === name;
+      t.classList.toggle('is-active', active);
+      t.setAttribute('aria-selected', String(active));
+    });
+    servicePanels.forEach(function (p) { p.hidden = p.dataset.servicesPanel !== name; });
+  }
+
+  serviceTabs.forEach(function (tab) {
+    tab.addEventListener('click', function () { showServicesTab(tab.dataset.servicesTab); });
+  });
+
+  function renderServicesSummary() {
+    var checked = serviceCheckboxes.filter(function (cb) { return cb.checked; });
+    servicesInput.value = checked.map(function (cb) { return cb.dataset.service; }).join(', ');
+
+    servicesChips.innerHTML = '';
+    var total = 0;
+    checked.forEach(function (cb) {
+      total += Number(cb.dataset.price) || 0;
+
+      var chip = document.createElement('span');
+      chip.className = 'services-picker__chip';
+
+      var label = document.createElement('span');
+      label.textContent = cb.dataset.service;
+
+      var remove = document.createElement('button');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', 'Убрать «' + cb.dataset.service + '»');
+      remove.textContent = '×';
+      remove.addEventListener('click', function () {
+        cb.checked = false;
+        cb.closest('.services-picker__item').classList.remove('is-checked');
+        renderServicesSummary();
+      });
+
+      chip.appendChild(label);
+      chip.appendChild(remove);
+      servicesChips.appendChild(chip);
+    });
+
+    servicesSummary.hidden = checked.length === 0;
+    servicesHint.hidden = checked.length > 0;
+    servicesTotal.textContent = 'от ' + total.toLocaleString('ru-RU') + ' ₽';
+  }
+
+  serviceCheckboxes.forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      cb.closest('.services-picker__item').classList.toggle('is-checked', cb.checked);
+      renderServicesSummary();
+    });
+  });
+
+  renderServicesSummary();
+
+  /* Сброс формы не трогает наши кастомные списки (мастер, услуги) —
+     синхронизируем их вручную, принудительно возвращая к пустому состоянию. */
   form.addEventListener('reset', function () {
     selectMasterOption(masterDefaultOption);
+    serviceCheckboxes.forEach(function (cb) {
+      cb.checked = false;
+      cb.closest('.services-picker__item').classList.remove('is-checked');
+    });
+    renderServicesSummary();
+    showServicesTab('cut');
   });
 
   function openBooking(opts) {
@@ -370,10 +444,13 @@
     }
 
     if (opts.service) {
-      var serviceSelect = document.getElementById('f-service');
-      Array.prototype.forEach.call(serviceSelect.options, function (o) {
-        if (o.textContent === opts.service) serviceSelect.value = o.value;
-      });
+      var matchCb = serviceCheckboxes.filter(function (cb) { return cb.dataset.service === opts.service; })[0];
+      if (matchCb && !matchCb.checked) {
+        matchCb.checked = true;
+        matchCb.closest('.services-picker__item').classList.add('is-checked');
+        showServicesTab(matchCb.closest('[data-services-panel]').dataset.servicesPanel);
+        renderServicesSummary();
+      }
     }
 
     formStep.hidden = false;
@@ -466,9 +543,10 @@
        Вариант 2 — Formspree: form.action = 'https://formspree.io/f/<ID>' и обычный submit.
        Сейчас заявка никуда не уходит — показываем только экран подтверждения. */
 
+    var chosenServices = servicesInput.value;
+    var serviceClause = chosenServices ? 'Заявка на «' + chosenServices + '» принята. ' : 'Заявка принята. ';
     document.getElementById('booking-done-text').textContent =
-      'Спасибо, ' + name.value.trim() + '! Заявка на «' +
-      document.getElementById('f-service').value + '» принята. ' +
+      'Спасибо, ' + name.value.trim() + '! ' + serviceClause +
       'Мы перезвоним на ' + phone.value + ', чтобы подтвердить время.';
 
     formStep.hidden = true;
