@@ -254,6 +254,64 @@
 
   var lastFocused = null;
 
+  /* ---------------- Выбор мастера с фото ---------------- */
+  var masterPicker = document.getElementById('master-picker');
+  var masterToggle = document.getElementById('master-picker-toggle');
+  var masterList = document.getElementById('master-picker-list');
+  var masterValueEl = document.getElementById('master-picker-value');
+  var masterAvatarEl = document.getElementById('master-picker-avatar');
+  var masterInput = document.getElementById('f-master');
+  var masterOptions = Array.prototype.slice.call(masterList.querySelectorAll('li'));
+  var masterDefaultOption = masterOptions[0];
+
+  function openMasterList() {
+    masterList.hidden = false;
+    masterPicker.classList.add('is-open');
+    masterToggle.setAttribute('aria-expanded', 'true');
+  }
+  function closeMasterList() {
+    masterList.hidden = true;
+    masterPicker.classList.remove('is-open');
+    masterToggle.setAttribute('aria-expanded', 'false');
+  }
+  function selectMasterOption(li) {
+    masterOptions.forEach(function (o) { o.setAttribute('aria-selected', String(o === li)); });
+    var liAvatar = li.querySelector('.master-picker__avatar');
+    masterInput.value = li.dataset.value;
+    masterValueEl.textContent = li.dataset.value;
+    masterAvatarEl.innerHTML = liAvatar.innerHTML;
+    masterAvatarEl.classList.toggle('master-picker__avatar--any', liAvatar.classList.contains('master-picker__avatar--any'));
+  }
+
+  masterToggle.addEventListener('click', function () {
+    masterList.hidden ? openMasterList() : closeMasterList();
+  });
+
+  masterOptions.forEach(function (li, i) {
+    li.tabIndex = -1;
+    li.addEventListener('click', function () {
+      selectMasterOption(li);
+      closeMasterList();
+      masterToggle.focus();
+    });
+    li.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); (masterOptions[i + 1] || masterOptions[0]).focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); (masterOptions[i - 1] || masterOptions[masterOptions.length - 1]).focus(); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); }
+      else if (e.key === 'Tab') { closeMasterList(); }
+    });
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!masterList.hidden && !masterPicker.contains(e.target)) closeMasterList();
+  });
+
+  /* Сброс формы возвращает скрытый input к значению по умолчанию,
+     но не трогает наш кастомный список — синхронизируем вручную. */
+  form.addEventListener('reset', function () {
+    selectMasterOption(masterDefaultOption);
+  });
+
   function openBooking(opts) {
     opts = opts || {};
     lastFocused = document.activeElement;
@@ -263,11 +321,9 @@
     if (opts.master) {
       masterLabel.textContent = 'Мастер: ' + opts.master;
       masterLabel.hidden = false;
-      var masterSelect = document.getElementById('f-master');
       var shortName = opts.master.split(',')[0].trim();
-      Array.prototype.forEach.call(masterSelect.options, function (o) {
-        if (o.textContent.indexOf(shortName) === 0) masterSelect.value = o.value;
-      });
+      var matched = masterOptions.filter(function (o) { return o.dataset.value.indexOf(shortName) === 0; })[0];
+      if (matched) selectMasterOption(matched);
     } else {
       masterLabel.hidden = true;
     }
@@ -312,6 +368,7 @@
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!lightbox.hidden) { closeLightbox(); return; }
+    if (!masterList.hidden) { closeMasterList(); masterToggle.focus(); return; }
     if (!modal.hidden) { closeBooking(); return; }
     if (!mobileMenu.hidden) closeMobileMenu();
   });

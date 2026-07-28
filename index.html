@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- ?v= сбрасывает кэш браузера после правок: меняйте номер при каждом обновлении файла -->
-<link rel="stylesheet" href="css/style.css?v=5">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
@@ -1125,18 +1125,59 @@
           </div>
 
           <div class="form__row">
-            <label class="form__label" for="f-master">Мастер</label>
-            <select name="master" id="f-master">
-              <option>Любой свободный</option>
-              <option>Михаил — бренд-барбер</option>
-              <option>Вадим — шеф-барбер</option>
-              <option>Антон — старший барбер</option>
-              <option>Павел — старший барбер</option>
-              <option>Владислав — старший барбер</option>
-              <option>Денис — барбер</option>
-              <option>Андрей — барбер</option>
-              <option>Павел — барбер</option>
-            </select>
+            <span class="form__label" id="master-picker-label">Мастер</span>
+            <div class="master-picker" id="master-picker">
+              <button type="button" class="master-picker__toggle" id="master-picker-toggle"
+                      aria-haspopup="listbox" aria-expanded="false"
+                      aria-labelledby="master-picker-label" aria-controls="master-picker-list">
+                <span class="master-picker__avatar master-picker__avatar--any" id="master-picker-avatar" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                </span>
+                <span class="master-picker__value" id="master-picker-value">Любой свободный</span>
+                <svg class="master-picker__chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+
+              <ul class="master-picker__list" id="master-picker-list" role="listbox" aria-labelledby="master-picker-label" hidden>
+                <li role="option" data-value="Любой свободный" aria-selected="true">
+                  <span class="master-picker__avatar master-picker__avatar--any" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></span>
+                  <span>Любой свободный</span>
+                </li>
+                <li role="option" data-value="Михаил — бренд-барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/michael_new-2.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Михаил — бренд-барбер</span>
+                </li>
+                <li role="option" data-value="Вадим — шеф-барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/vadim_new-2.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Вадим — шеф-барбер</span>
+                </li>
+                <li role="option" data-value="Антон — старший барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/anton_new-2.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Антон — старший барбер</span>
+                </li>
+                <li role="option" data-value="Павел — старший барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/barber-voroshilin.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Павел — старший барбер</span>
+                </li>
+                <li role="option" data-value="Владислав — старший барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/vlad.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Владислав — старший барбер</span>
+                </li>
+                <li role="option" data-value="Денис — барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/denis-2.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Денис — барбер</span>
+                </li>
+                <li role="option" data-value="Андрей — барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/andrey_new-2.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Андрей — барбер</span>
+                </li>
+                <li role="option" data-value="Павел — барбер">
+                  <span class="master-picker__avatar" aria-hidden="true"><img src="img/pavel_new-2.webp" alt="" loading="lazy" width="28" height="28"></span>
+                  <span>Павел — барбер</span>
+                </li>
+              </ul>
+
+              <input type="hidden" name="master" id="f-master" value="Любой свободный">
+            </div>
           </div>
 
           <div class="form__row">
@@ -1199,6 +1240,6 @@
 }
 </script>
 
-<script src="js/main.js?v=5"></script>
+<script src="js/main.js?v=6"></script>
 </body>
 </html>
