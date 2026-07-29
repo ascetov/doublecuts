@@ -6,9 +6,12 @@
    1. Часы работы в booking-data.js — настоящие (Пн-Вс 10:00–22:00, с сайта),
       одинаковые у всех мастеров. Никакой «занятости» календарь не выдумывает
       и не показывает — только реальные рабочие часы.
-   2. Поэтому выбранное время — ПРЕДВАРИТЕЛЬНОЕ. Заявка уходит администратору
-      в Telegram (см. sendToTelegram ниже и README.md), и он перезванивает
-      подтвердить точный слот. Это явно написано гостю на шагах записи.
+   2. Поэтому выбранное время — ПРЕДВАРИТЕЛЬНОЕ, это явно написано гостю.
+      Никакой формы с отправкой нет: последний шаг — сводка выбора и две
+      равнозначные кнопки, «Позвонить» и «Написать в Telegram» (открывает
+      чат https://t.me/doublecuts с готовым текстом заявки — гость сам
+      отправляет и уточняет, свободно ли время). YClients — запасной
+      вариант записи на этом же шаге, кнопкой поменьше.
    3. Слот показывается в списке, только если суммарная длительность ВСЕХ
       выбранных услуг умещается в рабочий день до закрытия (и, если запись
       на сегодня, не раньше чем через час от текущего времени).
@@ -50,9 +53,6 @@
     if (min < 60) return min + ' мин';
     var h = Math.floor(min / 60), m = min % 60;
     return h + ' ч' + (m ? ' ' + m + ' мин' : '');
-  }
-  function escapeHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   /* ------------------------------------------------------------------ */
@@ -116,9 +116,8 @@
   /* Разметка виджета                                                   */
   /* ------------------------------------------------------------------ */
 
-  var STEPS = ['Мастер', 'Услуги', 'Дата и время', 'Контакты'];
-  var TITLES = ['Выберите мастера', 'Выберите услуги', 'Выберите дату и время',
-                'Как с вами связаться', 'Вы записаны'];
+  var STEPS = ['Мастер', 'Услуги', 'Дата и время', 'Связаться'];
+  var TITLES = ['Выберите мастера', 'Выберите услуги', 'Выберите дату и время', 'Свяжитесь с нами'];
 
   var state = { step: 0, barber: null, services: [], date: null, time: null };
   var root, panes, titleEl, stepsEl, footEl, nextBtn, backBtn, hintEl;
@@ -151,7 +150,6 @@
             '<div class="book__pane" data-pane="1" hidden></div>' +
             '<div class="book__pane" data-pane="2" hidden></div>' +
             '<div class="book__pane" data-pane="3" hidden></div>' +
-            '<div class="book__pane" data-pane="4" hidden></div>' +
           '</div>' +
           '<div class="book__foot">' +
             '<button class="book__back" type="button" data-back>← Назад</button>' +
@@ -331,7 +329,7 @@
 
     panes[2].innerHTML =
       '<div class="pick-dates">' + strip + '</div>' + body +
-      '<p class="text">Это удобное для вас время — оно предварительное. Администратор позвонит и подтвердит точный слот. ' +
+      '<p class="text">Это удобное для вас время — на следующем шаге уточните его доступность у администратора. ' +
       'Выбранные услуги займут ' + fmtDur(dur) + ', поэтому показаны только окна, куда это время помещается целиком.</p>';
 
     panes[2].querySelectorAll('[data-date]').forEach(function (el) {
@@ -353,63 +351,42 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Шаг 4 — контакты                                                   */
+  /* Шаг 4 — связаться (без формы: позвонить или написать в Telegram)   */
   /* ------------------------------------------------------------------ */
-  function renderForm() {
+
+  function contactMessage() {
+    var b = barberById(state.barber);
+    var services = selectedServices().map(function (s) { return s.name; }).join(', ');
+    var d = new Date(state.date + 'T00:00:00');
+    return 'Здравствуйте! Хочу записаться: ' + b.name + ' (' + b.role + '), ' + services +
+      ', ' + fmtDateLong(d) + ' в ' + state.time + '. Подскажите, свободно?';
+  }
+
+  function renderContact() {
+    var b = barberById(state.barber);
+    var telegramUrl = D.contacts.telegram + '?text=' + encodeURIComponent(contactMessage());
+
     panes[3].innerHTML =
       summaryHTML() +
-      '<p class="text" style="margin:0 0 18px">Время предварительное — мы позвоним по указанному телефону и подтвердим его окончательно.</p>' +
-      '<label class="field" id="fName">' +
-        '<span class="field__lbl">Ваше имя</span>' +
-        '<input type="text" data-f="name" placeholder="Как к вам обращаться" autocomplete="name">' +
-        '<span class="field__err">Укажите имя</span>' +
-      '</label>' +
-      '<label class="field" id="fPhone">' +
-        '<span class="field__lbl">Телефон</span>' +
-        '<input type="tel" data-f="phone" placeholder="+7 (___) ___-__-__" autocomplete="tel" inputmode="tel">' +
-        '<span class="field__err">Введите номер полностью</span>' +
-      '</label>' +
-      '<label class="field" id="fNote">' +
-        '<span class="field__lbl">Комментарий <span class="field__lbl-opt">— необязательно</span></span>' +
-        '<input type="text" data-f="note" placeholder="Пожелания к стрижке">' +
-      '</label>' +
-      '<label class="check"><input type="checkbox" data-f="agree" checked>' +
-        '<span>Согласен на обработку персональных данных и подтверждаю, что приду в выбранное время.</span>' +
-      '</label>';
+      '<p class="text">Это предварительное время. Уточните его доступность у администратора — так быстрее всего:</p>' +
+      '<div class="contact-actions">' +
+        '<a class="btn btn--primary" href="' + D.contacts.phoneHref + '">Позвонить</a>' +
+        '<a class="btn btn--primary" href="' + telegramUrl + '" target="_blank" rel="noopener">Написать в Telegram</a>' +
+      '</div>' +
+      '<div class="contact-actions contact-actions--secondary">' +
+        '<button class="btn btn--ghost btn--sm" type="button" data-ics>Добавить в календарь</button>' +
+        '<a class="btn btn--ghost btn--sm" href="' + (b.yclients || D.contacts.yclients) + '" target="_blank" rel="noopener">Или запись через YClients</a>' +
+      '</div>';
 
-    var phone = panes[3].querySelector('[data-f="phone"]');
-    phone.addEventListener('input', function () { phone.value = maskPhone(phone.value); });
-    phone.addEventListener('focus', function () { if (!phone.value) phone.value = '+7 ('; });
-
-    panes[3].querySelectorAll('input').forEach(function (i) {
-      i.addEventListener('input', sync);
-      i.addEventListener('change', sync);
+    panes[3].querySelector('[data-ics]').addEventListener('click', function () {
+      downloadICS({
+        barberId: state.barber,
+        serviceIds: state.services.slice(),
+        date: state.date,
+        time: state.time,
+        min: totalMinutes()
+      });
     });
-    sync();
-  }
-
-  function maskPhone(v) {
-    var d = v.replace(/\D/g, '');
-    if (d[0] === '8') d = '7' + d.slice(1);
-    if (d[0] !== '7') d = '7' + d;
-    d = d.slice(0, 11);
-    var out = '+7';
-    if (d.length > 1) out += ' (' + d.slice(1, 4);
-    if (d.length >= 4) out += ')';
-    if (d.length > 4) out += ' ' + d.slice(4, 7);
-    if (d.length > 7) out += '-' + d.slice(7, 9);
-    if (d.length > 9) out += '-' + d.slice(9, 11);
-    return out;
-  }
-
-  function formOK() {
-    var name = panes[3].querySelector('[data-f="name"]');
-    var phone = panes[3].querySelector('[data-f="phone"]');
-    var agree = panes[3].querySelector('[data-f="agree"]');
-    if (!name || !phone) return false;
-    return name.value.trim().length >= 2 &&
-           phone.value.replace(/\D/g, '').length === 11 &&
-           agree.checked;
   }
 
   function summaryHTML() {
@@ -429,74 +406,6 @@
     function row(k, v) { return '<div class="summary__row"><span>' + k + '</span><b>' + v + '</b></div>'; }
   }
 
-  /* ------------------------------------------------------------------ */
-  /* Отправка заявки администратору в Telegram                          */
-  /* ------------------------------------------------------------------ */
-
-  /* Настройки — botToken и chatId в booking-data.js. Пока они пустые,
-     заявка нигде не сохраняется и не отправляется — гость всё равно
-     увидит экран «Вы записаны», но администратор о заявке не узнает.
-     Как получить токен и chatId — см. комментарий в booking-data.js
-     и README.md. */
-  function sendToTelegram(bk) {
-    var cfg = D.telegram || {};
-    if (!cfg.botToken || !cfg.chatId) {
-      console.warn('Double Cuts: заявка не отправлена — заполните telegram.botToken и telegram.chatId в js/booking-data.js (см. README.md).');
-      return;
-    }
-
-    var b = barberById(bk.barberId);
-    var services = bk.serviceIds.map(serviceById).filter(Boolean);
-    var d = new Date(bk.date + 'T00:00:00');
-
-    var text =
-      '💈 <b>Новая заявка с сайта</b>\n\n' +
-      '<b>Мастер:</b> ' + escapeHtml(b.name + ' · ' + b.role) + '\n' +
-      '<b>Услуги:</b> ' + escapeHtml(services.map(function (s) { return s.name; }).join(', ')) + '\n' +
-      '<b>Дата:</b> ' + escapeHtml(fmtDateLong(d)) + '\n' +
-      '<b>Время:</b> ' + escapeHtml(bk.time) + ' (предварительно, нужно подтвердить)\n' +
-      '<b>Стоимость:</b> ' + (hasApprox() ? 'от ' : '') + fmtMoney(totalPrice(b)) + '\n\n' +
-      '<b>Имя:</b> ' + escapeHtml(bk.name) + '\n' +
-      '<b>Телефон:</b> ' + escapeHtml(bk.phone) +
-      (bk.note ? '\n<b>Комментарий:</b> ' + escapeHtml(bk.note) : '');
-
-    fetch('https://api.telegram.org/bot' + cfg.botToken + '/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: cfg.chatId, text: text, parse_mode: 'HTML' })
-    }).catch(function (err) {
-      console.error('Double Cuts: не удалось отправить заявку в Telegram', err);
-    });
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* Шаг 5 — готово                                                     */
-  /* ------------------------------------------------------------------ */
-  function renderDone(booking) {
-    var b = barberById(state.barber);
-    panes[4].innerHTML =
-      '<div class="done">' +
-        '<div class="done__ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6 9 17l-5-5"/></svg></div>' +
-        '<h3 class="done__ttl">Заявка отправлена</h3>' +
-        '<p class="text">Время предварительное. Ждём вас по адресу: ' + D.contacts.address +
-        '.<br>Администратор позвонит вам в ближайшее время, чтобы подтвердить точный слот.</p>' +
-        summaryHTML() +
-        '<div class="done__actions">' +
-          '<button class="btn btn--primary btn--sm" type="button" data-ics>Добавить в календарь</button>' +
-          '<a class="btn btn--ghost btn--sm" href="' + (b.yclients || D.contacts.yclients) + '" target="_blank" rel="noopener">Открыть в YClients</a>' +
-          '<button class="btn btn--ghost btn--sm" type="button" data-restart>Записаться ещё</button>' +
-        '</div>' +
-      '</div>';
-
-    panes[4].querySelector('[data-ics]').addEventListener('click', function () { downloadICS(booking); });
-    panes[4].querySelector('[data-restart]').addEventListener('click', function () {
-      state = { step: 0, barber: null, services: [], date: null, time: null };
-      entryStep = 0;
-      renderBarbers();
-      goTo(0);
-    });
-  }
-
   function downloadICS(bk) {
     var b = barberById(bk.barberId);
     var services = bk.serviceIds.map(serviceById).filter(Boolean);
@@ -511,7 +420,7 @@
       'DTEND:' + end,
       'SUMMARY:' + services.map(function (s) { return s.name; }).join(', ') + ' — Double Cuts (' + b.name + '), предварительно',
       'LOCATION:' + D.contacts.address,
-      'DESCRIPTION:Мастер: ' + b.name + '. Время предварительное, ждите звонка для подтверждения. Телефон барбершопа: ' + D.contacts.phone,
+      'DESCRIPTION:Мастер: ' + b.name + '. Время предварительное, уточните по телефону ' + D.contacts.phone + ' или в Telegram ' + D.contacts.telegram,
       'END:VEVENT', 'END:VCALENDAR'
     ].join('\r\n');
 
@@ -532,7 +441,6 @@
     if (step === 0) return !!state.barber;
     if (step === 1) return state.services.length > 0;
     if (step === 2) return !!state.time;
-    if (step === 3) return formOK();
     return true;
   }
 
@@ -540,28 +448,11 @@
     if (step > state.step && !canLeave(state.step)) return;
     if (step < 0) return;
 
-    if (step === 4 && state.step === 3) {
-      var booking = {
-        barberId: state.barber,
-        serviceIds: state.services.slice(),
-        date: state.date,
-        time: state.time,
-        min: totalMinutes(),
-        name: panes[3].querySelector('[data-f="name"]').value.trim(),
-        phone: panes[3].querySelector('[data-f="phone"]').value,
-        note: panes[3].querySelector('[data-f="note"]').value.trim(),
-        created: new Date().toISOString()
-      };
-
-      sendToTelegram(booking);
-      renderDone(booking);
-    }
-
     state.step = step;
 
     if (step === 1) renderServices();
     if (step === 2) renderCalendar();
-    if (step === 3) renderForm();
+    if (step === 3) renderContact();
 
     for (var i = 0; i < panes.length; i++) panes[i].hidden = (i !== step);
     titleEl.textContent = TITLES[step];
@@ -576,11 +467,13 @@
       items[i].className = 'steps__item' + (i < state.step ? ' is-done' : '') + (i === state.step ? ' is-active' : '');
     }
 
-    var done = state.step === 4;
-    footEl.style.display = done ? 'none' : '';
+    var isLast = state.step === STEPS.length - 1;
+    nextBtn.hidden = isLast;
     backBtn.style.visibility = state.step === 0 ? 'hidden' : 'visible';
-    nextBtn.disabled = !canLeave(state.step);
-    nextBtn.innerHTML = (state.step === 3 ? 'Подтвердить запись' : 'Далее') + ' <span class="arw">→</span>';
+    if (!isLast) {
+      nextBtn.disabled = !canLeave(state.step);
+      nextBtn.innerHTML = 'Далее <span class="arw">→</span>';
+    }
 
     var hint = '';
     if (state.step === 1 && state.barber) hint = barberById(state.barber).name;

@@ -81,6 +81,10 @@ h1,h2,h3,h4{
   transition:background .22s, color .22s, border-color .22s, transform .12s;
 }
 .btn:active{ transform:translateY(1px); }
+/* display:inline-flex выше перебивает встроенное [hidden]{display:none} браузера
+   (одинаковая специфичность, но авторский CSS побеждает UA-стиль) — без этой
+   строки скрытая через .hidden/[hidden] кнопка всё равно оставалась бы видимой. */
+.btn[hidden]{ display:none; }
 
 .btn--primary{ background:var(--brand); color:#fff; border-color:var(--brand); }
 .btn--primary:hover{ background:var(--brand-light); border-color:var(--brand-light); }
@@ -749,25 +753,6 @@ h1,h2,h3,h4{
   background:rgba(224,85,95,.1); border:1px solid rgba(224,85,95,.3); color:#f0b8bc;
 }
 
-/* Шаг 4 — контакты */
-.field{ display:block; margin-bottom:16px; }
-.field__lbl{ display:block; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
-.field__lbl-opt{ text-transform:none; letter-spacing:0; }
-.field input{
-  width:100%; background:var(--bg); color:var(--text);
-  border:1px solid var(--line-strong); border-radius:var(--radius);
-  padding:13px 15px; font-family:inherit; font-size:16px; min-height:50px;
-  transition:border-color .2s;
-}
-.field input:focus{ outline:none; border-color:var(--brand-light); }
-.field input::placeholder{ color:var(--text-muted); opacity:.7; }
-.field.has-error input{ border-color:#e0555f; }
-.field__err{ display:none; font-size:12.5px; color:#e0555f; margin-top:6px; }
-.field.has-error .field__err{ display:block; }
-
-.check{ display:flex; gap:11px; align-items:flex-start; font-size:12.5px; color:var(--text-muted); line-height:1.55; cursor:pointer; }
-.check input{ flex:none; width:17px; height:17px; accent-color:var(--brand-light); margin-top:2px; }
-
 .summary{
   background:var(--bg); border:1px solid var(--line); border-radius:var(--radius);
   padding:18px 20px; margin-bottom:22px;
@@ -778,16 +763,11 @@ h1,h2,h3,h4{
 .summary__total{ border-top:1px solid var(--line); margin-top:8px; padding-top:13px; }
 .summary__total b{ color:var(--brand-pale); font-size:18px; font-family:Oswald, Arial, sans-serif; }
 
-/* Шаг 5 — готово */
-.done{ text-align:center; padding:14px 0 4px; }
-.done__ico{
-  width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
-  border:1px solid var(--brand-light); color:var(--brand-light);
-  display:flex; align-items:center; justify-content:center;
-}
-.done__ttl{ font-family:Oswald, Arial, sans-serif; font-weight:500; font-size:26px; margin:0 0 10px; }
-.done .summary{ text-align:left; margin-top:24px; }
-.done__actions{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:20px; }
+/* Шаг 4 — связаться: без формы, сразу «Позвонить» / «Написать в Telegram» */
+.contact-actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
+.contact-actions .btn{ flex:1 1 200px; text-align:center; }
+.contact-actions--secondary{ margin-top:12px; }
+.contact-actions--secondary .btn{ flex:0 1 auto; }
 
 /* Подвал визарда */
 .book__foot{
