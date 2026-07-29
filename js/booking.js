@@ -232,6 +232,11 @@
 
   var state = { step: 0, barber: null, services: [], date: null, time: null };
   var root, panes, titleEl, stepsEl, footEl, nextBtn, backBtn, hintEl;
+  /* Шаг, с которого визард стартовал в этот раз: 1, если мастер уже был
+     выбран кнопкой на странице (шаг «Мастер» тогда пропускается), иначе 0.
+     «Назад» с этого шага закрывает визард, а не ведёт на шаг, которого
+     гость не видел — так понятнее уйти обратно на страницу с сайта. */
+  var entryStep = 0;
 
   function build() {
     root = document.createElement('div');
@@ -282,7 +287,10 @@
 
     root.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) close(); });
     nextBtn.addEventListener('click', function () { goTo(state.step + 1); });
-    backBtn.addEventListener('click', function () { goTo(state.step - 1); });
+    backBtn.addEventListener('click', function () {
+      if (state.step <= entryStep) { close(); return; }
+      goTo(state.step - 1);
+    });
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && root.classList.contains('is-open')) close();
@@ -560,6 +568,7 @@
     panes[4].querySelector('[data-ics]').addEventListener('click', function () { downloadICS(booking); });
     panes[4].querySelector('[data-restart]').addEventListener('click', function () {
       state = { step: 0, barber: null, services: [], date: null, time: null };
+      entryStep = 0;
       renderBarbers();
       goTo(0);
     });
@@ -684,9 +693,9 @@
     }
 
     renderBarbers();
-    var step = state.barber ? 1 : 0;
+    entryStep = state.barber ? 1 : 0;
     state.step = 0;
-    goTo(step);
+    goTo(entryStep);
 
     root.classList.add('is-open');
     document.body.classList.add('no-scroll');
