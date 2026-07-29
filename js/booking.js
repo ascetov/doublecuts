@@ -374,19 +374,8 @@
         '<a class="btn btn--primary" href="' + telegramUrl + '" target="_blank" rel="noopener">Написать в Telegram</a>' +
       '</div>' +
       '<div class="contact-actions contact-actions--secondary">' +
-        '<button class="btn btn--ghost btn--sm" type="button" data-ics>Добавить в календарь</button>' +
         '<a class="btn btn--ghost btn--sm" href="' + (b.yclients || D.contacts.yclients) + '" target="_blank" rel="noopener">Или запись через YClients</a>' +
       '</div>';
-
-    panes[3].querySelector('[data-ics]').addEventListener('click', function () {
-      downloadICS({
-        barberId: state.barber,
-        serviceIds: state.services.slice(),
-        date: state.date,
-        time: state.time,
-        min: totalMinutes()
-      });
-    });
   }
 
   function summaryHTML() {
@@ -404,34 +393,6 @@
     '</div>';
 
     function row(k, v) { return '<div class="summary__row"><span>' + k + '</span><b>' + v + '</b></div>'; }
-  }
-
-  function downloadICS(bk) {
-    var b = barberById(bk.barberId);
-    var services = bk.serviceIds.map(serviceById).filter(Boolean);
-    var start = bk.date.replace(/-/g, '') + 'T' + bk.time.replace(':', '') + '00';
-    var end = bk.date.replace(/-/g, '') + 'T' + toHM(toMin(bk.time) + bk.min).replace(':', '') + '00';
-    var ics = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Double Cuts//RU',
-      'BEGIN:VEVENT',
-      'UID:' + Date.now() + '@doublecuts.ru',
-      'DTSTAMP:' + start,
-      'DTSTART:' + start,
-      'DTEND:' + end,
-      'SUMMARY:' + services.map(function (s) { return s.name; }).join(', ') + ' — Double Cuts (' + b.name + '), предварительно',
-      'LOCATION:' + D.contacts.address,
-      'DESCRIPTION:Мастер: ' + b.name + '. Время предварительное, уточните по телефону ' + D.contacts.phone + ' или в Telegram ' + D.contacts.telegram,
-      'END:VEVENT', 'END:VCALENDAR'
-    ].join('\r\n');
-
-    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'double-cuts.ics';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
   }
 
   /* ------------------------------------------------------------------ */
