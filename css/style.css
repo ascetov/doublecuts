@@ -662,11 +662,6 @@ h1,h2,h3,h4{
 .book__body{ overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
 .book__pane{ padding:24px 32px; }
 .book__pane[hidden]{ display:none; }
-.book__legend{ display:flex; gap:18px; flex-wrap:wrap; margin-bottom:16px; font-size:12px; color:var(--text-muted); }
-.book__legend i{ display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
-.i-free{ background:rgba(139,70,201,.25); border:1px solid var(--brand-light); }
-.i-busy{ background:rgba(224,85,95,.16); border:1px solid rgba(224,85,95,.5); }
-.i-tight{ background:var(--bg-card); border:1px solid var(--line); }
 
 .book .text{ color:var(--text-muted); font-size:13.5px; margin:16px 0 0; }
 
@@ -738,22 +733,16 @@ h1,h2,h3,h4{
 .pick-date:disabled{ opacity:.35; cursor:not-allowed; }
 .pick-date:disabled em{ color:#e0555f; }
 
-/* Слоты времени */
+/* Слоты времени — все одинаковые, просто варианты выбора (не «занято/свободно») */
 .slots{ display:grid; grid-template-columns:repeat(auto-fill,minmax(84px,1fr)); gap:8px; }
 .slot{
   padding:11px 4px; border-radius:var(--radius); font-size:14px; letter-spacing:.03em;
-  border:1px solid var(--line); background:var(--bg); text-align:center;
+  border:1px solid rgba(139,70,201,.5); background:rgba(139,70,201,.08); color:var(--text);
+  text-align:center; cursor:pointer;
   transition:border-color .2s, background .2s, color .2s;
 }
-.slot--free{ border-color:rgba(139,70,201,.5); background:rgba(139,70,201,.08); color:var(--text); cursor:pointer; }
-.slot--free:hover{ background:var(--brand); border-color:var(--brand); color:#fff; }
-.slot--free.is-sel{ background:var(--brand); border-color:var(--brand); color:#fff; font-weight:600; }
-.slot--busy{
-  color:rgba(224,85,95,.85); border-color:rgba(224,85,95,.32); background:rgba(224,85,95,.08);
-  cursor:not-allowed; text-decoration:line-through;
-}
-.slot--tight{ color:var(--text-muted); opacity:.55; cursor:not-allowed; }
-.slot--lunch{ color:var(--text-muted); opacity:.5; cursor:not-allowed; font-size:11px; letter-spacing:.08em; }
+.slot:hover{ background:var(--brand); border-color:var(--brand); color:#fff; }
+.slot.is-sel{ background:var(--brand); border-color:var(--brand); color:#fff; font-weight:600; }
 
 .notice{
   padding:16px 18px; border-radius:var(--radius); font-size:14px; line-height:1.6;

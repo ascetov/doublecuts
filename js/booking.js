@@ -1,22 +1,20 @@
 /* ============================================================================
-   DOUBLE CUTS — онлайн-запись: мастер, услуги, календарь свободного времени
+   DOUBLE CUTS — онлайн-запись: мастер, услуги, удобное время
    ----------------------------------------------------------------------------
    Как это работает
    ----------------
-   1. У каждого барбера в booking-data.js задан график: рабочие дни, начало
-      и конец смены, обед и «плотность» загрузки (load).
-   2. Занятые окна на конкретную дату генерируются детерминированно: из пары
-      «мастер + дата» считается число-семя, и по нему псевдослучайно
-      расставляются блоки занятости. Одна и та же дата у одного мастера
-      ВСЕГДА даёт одну и ту же картину — календарь не «прыгает» между
-      перезагрузками страницы.
-   3. Записи, сделанные на сайте, сохраняются в localStorage и складываются
-      с занятостью из графика — выбранное окно сразу становится недоступным.
-   4. Слот доступен, только если суммарная длительность ВСЕХ выбранных услуг
-      укладывается в свободный промежуток до конца смены или обеда.
+   1. Часы работы в booking-data.js — настоящие (Пн-Вс 10:00–22:00, с сайта),
+      одинаковые у всех мастеров. Никакой «занятости» календарь не выдумывает
+      и не показывает — только реальные рабочие часы.
+   2. Поэтому выбранное время — ПРЕДВАРИТЕЛЬНОЕ. Заявка уходит администратору
+      в Telegram (см. sendToTelegram ниже и README.md), и он перезванивает
+      подтвердить точный слот. Это явно написано гостю на шагах записи.
+   3. Слот показывается в списке, только если суммарная длительность ВСЕХ
+      выбранных услуг умещается в рабочий день до закрытия (и, если запись
+      на сегодня, не раньше чем через час от текущего времени).
 
-   Чтобы подключить РЕАЛЬНОЕ расписание (YClients или свой сервер), достаточно
-   переписать одну функцию — loadBusy().
+   Чтобы подключить настоящую занятость мастеров (YClients API или свой
+   сервер) — смотрите функцию daySlots() ниже.
    ============================================================================ */
 
 (function () {
@@ -28,7 +26,6 @@
   var STEP_MIN = 30;   // шаг сетки времени, минут
   var DAYS     = 14;   // на сколько дней вперёд открыта запись
   var LEAD_MIN = 60;   // нельзя записаться раньше чем через час
-  var LS_KEY   = 'doublecuts_bookings';
 
   var WD_SHORT  = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
   var MONTH_GEN = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
@@ -54,20 +51,8 @@
     var h = Math.floor(min / 60), m = min % 60;
     return h + ' ч' + (m ? ' ' + m + ' мин' : '');
   }
-
-  /* Детерминированный ГПСЧ: одна и та же дата → один и тот же график */
-  function hashStr(s) {
-    var h = 2166136261;
-    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-    return h >>> 0;
-  }
-  function mulberry32(seed) {
-    return function () {
-      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   /* ------------------------------------------------------------------ */
@@ -104,122 +89,27 @@
   }
   function hasApprox() { return selectedServices().some(function (s) { return s.approx; }); }
 
-  /* Записи, сделанные на сайте */
-  function savedBookings() {
-    try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch (e) { return []; }
-  }
-  function saveBooking(b) {
-    var all = savedBookings();
-    all.push(b);
-    try { localStorage.setItem(LS_KEY, JSON.stringify(all)); } catch (e) {}
-  }
-
   /* ------------------------------------------------------------------ */
-  /* Расписание                                                         */
+  /* Расписание — только реальные рабочие часы, без выдуманной занятости */
   /* ------------------------------------------------------------------ */
 
-  /* ТОЧКА ЗАМЕНЫ ДЛЯ РЕАЛЬНЫХ ДАННЫХ.
-     Возвращает { off: true } либо { busy: Set(минуты начала занятых слотов) }.
-     Чтобы подключить YClients / свой сервер — отдайте отсюда реальные
-     занятые интервалы (см. README.md). */
-  function loadBusy(barberId, key, cfg) {
-    var ov = (D.scheduleOverrides[barberId] || {})[key];
-    if (ov && ov.off) return { off: true };
-
-    var busy = generateBusy(barberId, key, cfg);
-
-    if (ov && ov.busy) ov.busy.forEach(function (t) { busy.add(toMin(t)); });
-
-    savedBookings().forEach(function (b) {
-      if (b.barberId !== barberId || b.date !== key) return;
-      var s = toMin(b.time), n = Math.ceil(b.min / STEP_MIN);
-      for (var i = 0; i < n; i++) busy.add(s + i * STEP_MIN);
-    });
-
-    return { busy: busy };
-  }
-
-  function generateBusy(barberId, key, cfg) {
-    var rnd = mulberry32(hashStr(barberId + '|' + key));
-    var start = toMin(cfg.start), end = toMin(cfg.end);
-    var total = Math.floor((end - start) / STEP_MIN);
-    var busy = new Set();
-    var i = 0;
-
-    while (i < total) {
-      if (rnd() < cfg.load) {
-        var len = 2 + Math.floor(rnd() * 3);
-        for (var k = 0; k < len && i + k < total; k++) busy.add(start + (i + k) * STEP_MIN);
-        i += len + 1 + Math.floor(rnd() * 4);
-      } else {
-        i += 1;
-      }
-    }
-
-    var run = 0, best = 0;
-    for (var s = 0; s < total; s++) {
-      run = busy.has(start + s * STEP_MIN) ? 0 : run + 1;
-      if (run > best) best = run;
-    }
-    if (best < 4) {
-      var at = Math.floor(rnd() * Math.max(1, total - 4));
-      for (var j = 0; j < 4; j++) busy.delete(start + (at + j) * STEP_MIN);
-    }
-
-    return busy;
-  }
-
+  /* Список времени на дату: только то, что реально умещается в рабочий день.
+     off — мастер в этот день не работает (согласно schedule[].days). */
   function daySlots(barber, date, dur) {
     var cfg = D.schedule[barber.id];
-    var key = dateKey(date);
+    if (cfg.days.indexOf(date.getDay()) === -1) return { off: true, slots: [] };
 
-    if (cfg.days.indexOf(date.getDay()) === -1) return { off: true };
-
-    var data = loadBusy(barber.id, key, cfg);
-    if (data.off) return { off: true };
-
-    var busy  = data.busy;
     var start = toMin(cfg.start), end = toMin(cfg.end);
-    var lunch = cfg.lunch ? [toMin(cfg.lunch[0]), toMin(cfg.lunch[1])] : null;
-    var need  = Math.max(1, Math.ceil(dur / STEP_MIN));
-
     var now = new Date();
-    var isToday = dateKey(now) === key;
+    var isToday = dateKey(now) === dateKey(date);
     var earliest = isToday ? now.getHours() * 60 + now.getMinutes() + LEAD_MIN : -1;
 
-    function blocked(t) {
-      if (busy.has(t)) return true;
-      if (lunch && t >= lunch[0] && t < lunch[1]) return true;
-      return false;
-    }
-
-    var slots = [], free = 0;
-    for (var t = start; t + STEP_MIN <= end; t += STEP_MIN) {
+    var slots = [];
+    for (var t = start; t + dur <= end; t += STEP_MIN) {
       if (t < earliest) continue;
-
-      var state_;
-      if (lunch && t >= lunch[0] && t < lunch[1]) {
-        state_ = 'lunch';
-      } else if (busy.has(t)) {
-        state_ = 'busy';
-      } else if (t + dur > end) {
-        state_ = 'tight';
-      } else {
-        state_ = 'free';
-        for (var k = 1; k < need; k++) {
-          if (blocked(t + k * STEP_MIN)) { state_ = 'tight'; break; }
-        }
-      }
-      if (state_ === 'free') free++;
-      slots.push({ min: t, time: toHM(t), state: state_ });
+      slots.push(toHM(t));
     }
-
-    return { slots: slots, free: free };
-  }
-
-  function freeCount(barber, date, dur) {
-    var r = daySlots(barber, date, dur);
-    return r.off ? -1 : r.free;
+    return { off: false, slots: slots };
   }
 
   /* ------------------------------------------------------------------ */
@@ -410,21 +300,20 @@
     var days = [];
     for (var i = 0; i < DAYS; i++) { var d = new Date(today); d.setDate(today.getDate() + i); days.push(d); }
 
+    var dayInfo = days.map(function (d) { return { date: d, key: dateKey(d), res: daySlots(b, d, dur) }; });
+
     if (!state.date) {
-      for (var j = 0; j < days.length; j++) {
-        if (freeCount(b, days[j], dur) > 0) { state.date = dateKey(days[j]); break; }
-      }
-      if (!state.date) state.date = dateKey(days[0]);
+      var firstOpen = dayInfo.filter(function (x) { return !x.res.off && x.res.slots.length > 0; })[0];
+      state.date = firstOpen ? firstOpen.key : dayInfo[0].key;
     }
 
-    var strip = days.map(function (d) {
-      var key = dateKey(d);
-      var free = freeCount(b, d, dur);
-      var dis = free <= 0;
-      var note = free < 0 ? 'выходной' : (free === 0 ? 'нет окон' : (free < 5 ? free + (free === 1 ? ' окно' : ' окна') : free + ' окон'));
-      return '<button class="pick-date' + (state.date === key ? ' is-sel' : '') + '" type="button" data-date="' + key + '"' +
+    var strip = dayInfo.map(function (x) {
+      var dis = x.res.off || x.res.slots.length === 0;
+      var label = x.res.off ? 'выходной' : (dis ? 'нет мест' : '');
+      return '<button class="pick-date' + (state.date === x.key ? ' is-sel' : '') + '" type="button" data-date="' + x.key + '"' +
         (dis ? ' disabled' : '') + '>' +
-        '<span>' + WD_SHORT[d.getDay()] + '</span><b>' + d.getDate() + '</b><em>' + note + '</em>' +
+        '<span>' + WD_SHORT[x.date.getDay()] + '</span><b>' + x.date.getDate() + '</b>' +
+        (label ? '<em>' + label + '</em>' : '<em>&nbsp;</em>') +
       '</button>';
     }).join('');
 
@@ -433,22 +322,17 @@
     var body;
 
     if (res.off) {
-      body = '<div class="notice">' + b.name + ' в этот день не работает. Выберите другую дату — свободные дни отмечены в ленте выше.</div>';
-    } else if (res.free === 0) {
-      body = '<div class="notice">На ' + fmtDateLong(sel) + ' у мастера всё занято. Ближайшие свободные окна показаны в ленте дат.</div>' +
-             '<div class="slots" style="margin-top:16px">' + slotsHTML(res.slots) + '</div>';
+      body = '<div class="notice">' + b.name + ' в этот день не работает. Выберите другую дату — доступные дни отмечены в ленте выше.</div>';
+    } else if (res.slots.length === 0) {
+      body = '<div class="notice">На ' + fmtDateLong(sel) + ' для выбранных услуг уже не осталось времени. Выберите другую дату.</div>';
     } else {
       body = '<div class="slots">' + slotsHTML(res.slots) + '</div>';
     }
 
     panes[2].innerHTML =
-      '<div class="pick-dates">' + strip + '</div>' +
-      '<div class="book__legend">' +
-        '<span><i class="i-free"></i>свободно</span>' +
-        '<span><i class="i-busy"></i>занято</span>' +
-        '<span><i class="i-tight"></i>не хватает времени на услугу</span>' +
-      '</div>' + body +
-      '<p class="text">Выбранные услуги займут ' + fmtDur(dur) + ', поэтому доступны только окна, в которые это время помещается целиком.</p>';
+      '<div class="pick-dates">' + strip + '</div>' + body +
+      '<p class="text">Это удобное для вас время — оно предварительное. Администратор позвонит и подтвердит точный слот. ' +
+      'Выбранные услуги займут ' + fmtDur(dur) + ', поэтому показаны только окна, куда это время помещается целиком.</p>';
 
     panes[2].querySelectorAll('[data-date]').forEach(function (el) {
       el.addEventListener('click', function () { state.date = el.dataset.date; state.time = null; renderCalendar(); });
@@ -462,12 +346,9 @@
     sync();
   }
 
-  function slotsHTML(slots) {
-    return slots.map(function (s) {
-      if (s.state === 'lunch') return '<span class="slot slot--lunch">обед</span>';
-      if (s.state === 'busy')  return '<span class="slot slot--busy" title="Время занято">' + s.time + '</span>';
-      if (s.state === 'tight') return '<span class="slot slot--tight" title="Выбранные услуги не помещаются в это окно">' + s.time + '</span>';
-      return '<button class="slot slot--free' + (state.time === s.time ? ' is-sel' : '') + '" type="button" data-time="' + s.time + '">' + s.time + '</button>';
+  function slotsHTML(times) {
+    return times.map(function (t) {
+      return '<button class="slot' + (state.time === t ? ' is-sel' : '') + '" type="button" data-time="' + t + '">' + t + '</button>';
     }).join('');
   }
 
@@ -477,6 +358,7 @@
   function renderForm() {
     panes[3].innerHTML =
       summaryHTML() +
+      '<p class="text" style="margin:0 0 18px">Время предварительное — мы позвоним по указанному телефону и подтвердим его окончательно.</p>' +
       '<label class="field" id="fName">' +
         '<span class="field__lbl">Ваше имя</span>' +
         '<input type="text" data-f="name" placeholder="Как к вам обращаться" autocomplete="name">' +
@@ -540,11 +422,51 @@
       row('Мастер', b.name + ' · ' + b.role) +
       row('Услуги', services.map(function (s) { return s.name; }).join(', ')) +
       row('Дата', fmtDateLong(d)) +
-      row('Время', state.time + ' – ' + toHM(endMin) + ' (' + fmtDur(dur) + ')') +
+      row('Время', state.time + ' – ' + toHM(endMin) + ' (' + fmtDur(dur) + ', предварительно)') +
       '<div class="summary__row summary__total"><span>Стоимость</span><b>' + (hasApprox() ? 'от ' : '') + fmtMoney(totalPrice(b)) + '</b></div>' +
     '</div>';
 
     function row(k, v) { return '<div class="summary__row"><span>' + k + '</span><b>' + v + '</b></div>'; }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Отправка заявки администратору в Telegram                          */
+  /* ------------------------------------------------------------------ */
+
+  /* Настройки — botToken и chatId в booking-data.js. Пока они пустые,
+     заявка нигде не сохраняется и не отправляется — гость всё равно
+     увидит экран «Вы записаны», но администратор о заявке не узнает.
+     Как получить токен и chatId — см. комментарий в booking-data.js
+     и README.md. */
+  function sendToTelegram(bk) {
+    var cfg = D.telegram || {};
+    if (!cfg.botToken || !cfg.chatId) {
+      console.warn('Double Cuts: заявка не отправлена — заполните telegram.botToken и telegram.chatId в js/booking-data.js (см. README.md).');
+      return;
+    }
+
+    var b = barberById(bk.barberId);
+    var services = bk.serviceIds.map(serviceById).filter(Boolean);
+    var d = new Date(bk.date + 'T00:00:00');
+
+    var text =
+      '💈 <b>Новая заявка с сайта</b>\n\n' +
+      '<b>Мастер:</b> ' + escapeHtml(b.name + ' · ' + b.role) + '\n' +
+      '<b>Услуги:</b> ' + escapeHtml(services.map(function (s) { return s.name; }).join(', ')) + '\n' +
+      '<b>Дата:</b> ' + escapeHtml(fmtDateLong(d)) + '\n' +
+      '<b>Время:</b> ' + escapeHtml(bk.time) + ' (предварительно, нужно подтвердить)\n' +
+      '<b>Стоимость:</b> ' + (hasApprox() ? 'от ' : '') + fmtMoney(totalPrice(b)) + '\n\n' +
+      '<b>Имя:</b> ' + escapeHtml(bk.name) + '\n' +
+      '<b>Телефон:</b> ' + escapeHtml(bk.phone) +
+      (bk.note ? '\n<b>Комментарий:</b> ' + escapeHtml(bk.note) : '');
+
+    fetch('https://api.telegram.org/bot' + cfg.botToken + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: cfg.chatId, text: text, parse_mode: 'HTML' })
+    }).catch(function (err) {
+      console.error('Double Cuts: не удалось отправить заявку в Telegram', err);
+    });
   }
 
   /* ------------------------------------------------------------------ */
@@ -555,8 +477,9 @@
     panes[4].innerHTML =
       '<div class="done">' +
         '<div class="done__ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6 9 17l-5-5"/></svg></div>' +
-        '<h3 class="done__ttl">Вы записаны</h3>' +
-        '<p class="text">Ждём вас по адресу: ' + D.contacts.address + '.<br>Администратор перезвонит для подтверждения.</p>' +
+        '<h3 class="done__ttl">Заявка отправлена</h3>' +
+        '<p class="text">Время предварительное. Ждём вас по адресу: ' + D.contacts.address +
+        '.<br>Администратор позвонит вам в ближайшее время, чтобы подтвердить точный слот.</p>' +
         summaryHTML() +
         '<div class="done__actions">' +
           '<button class="btn btn--primary btn--sm" type="button" data-ics>Добавить в календарь</button>' +
@@ -586,9 +509,9 @@
       'DTSTAMP:' + start,
       'DTSTART:' + start,
       'DTEND:' + end,
-      'SUMMARY:' + services.map(function (s) { return s.name; }).join(', ') + ' — Double Cuts (' + b.name + ')',
+      'SUMMARY:' + services.map(function (s) { return s.name; }).join(', ') + ' — Double Cuts (' + b.name + '), предварительно',
       'LOCATION:' + D.contacts.address,
-      'DESCRIPTION:Мастер: ' + b.name + '. Телефон барбершопа: ' + D.contacts.phone,
+      'DESCRIPTION:Мастер: ' + b.name + '. Время предварительное, ждите звонка для подтверждения. Телефон барбершопа: ' + D.contacts.phone,
       'END:VEVENT', 'END:VCALENDAR'
     ].join('\r\n');
 
@@ -630,17 +553,7 @@
         created: new Date().toISOString()
       };
 
-      /* TODO: подключить реальную отправку заявки администратору.
-         Вариант 1 — Telegram-бот:
-           fetch('https://api.telegram.org/bot<TOKEN>/sendMessage', {
-             method: 'POST', headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ chat_id: '<CHAT_ID>', text: text })
-           });
-         Вариант 2 — Formspree: обычный fetch/submit на https://formspree.io/f/<ID>.
-         Сейчас запись сохраняется только в localStorage браузера (учитывается
-         при построении календаря дальше) — администратор её не увидит, пока
-         этот TODO не подключён. */
-      saveBooking(booking);
+      sendToTelegram(booking);
       renderDone(booking);
     }
 
