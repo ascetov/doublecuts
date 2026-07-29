@@ -212,6 +212,20 @@
     mapFrame.src = mapFrame.dataset.src;
   }
 
+  /* ---------------- Нижняя панель: скрыта, пока видны кнопки в hero ---------------- */
+  var bottombar = document.querySelector('.bottombar');
+  var heroActions = document.querySelector('.hero__actions');
+  if (bottombar && heroActions && 'IntersectionObserver' in window) {
+    var bottombarObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        bottombar.classList.toggle('is-visible', !entry.isIntersecting);
+      });
+    });
+    bottombarObserver.observe(heroActions);
+  } else if (bottombar) {
+    bottombar.classList.add('is-visible');
+  }
+
   /* ---------------- Запись: закрываем бургер-меню, когда открывается визард ----------------
      Сама запись (мастер, услуги, календарь занятости) — отдельный модуль,
      см. booking-data.js и booking.js. Здесь только гасим мобильное меню,
