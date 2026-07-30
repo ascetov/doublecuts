@@ -241,6 +241,32 @@
     masterBookButtons.forEach(function (btn) { masterBtnObserver.observe(btn); });
   }
 
+  /* ---------------- Сертификаты: сначала один, остальные — по кнопке ---------------- */
+  var certMoreBtn = document.getElementById('certMore');
+  var certCards = document.querySelectorAll('.cert-card');
+  if (certMoreBtn && certCards.length > 1) {
+    certCards.forEach(function (card, i) { if (i > 0) card.hidden = true; });
+    certMoreBtn.addEventListener('click', function () {
+      certCards.forEach(function (card) { card.hidden = false; });
+      certMoreBtn.hidden = true;
+    });
+  } else if (certMoreBtn) {
+    certMoreBtn.hidden = true;
+  }
+
+  /* Платёжного шлюза на сайте нет — «Купить» открывает Telegram с готовым
+     текстом заявки, администратор оформит сертификат и пришлёт реквизиты
+     для оплаты. Ссылка берётся из booking-data.js (грузится после этого
+     файла), поэтому читаем window.DOUBLECUTS только в момент клика. */
+  document.querySelectorAll('.cert-buy').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var amount = Number(btn.dataset.amount) || 0;
+      var telegram = (window.DOUBLECUTS && window.DOUBLECUTS.contacts && window.DOUBLECUTS.contacts.telegram) || 'https://t.me/doublecuts';
+      var text = 'Здравствуйте! Хочу купить подарочный сертификат Double Cuts на ' + amount.toLocaleString('ru-RU') + ' ₽. Как оформить?';
+      window.open(telegram + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    });
+  });
+
   /* ---------------- Запись: закрываем бургер-меню, когда открывается визард ----------------
      Сама запись (мастер, услуги, календарь занятости) — отдельный модуль,
      см. booking-data.js и booking.js. Здесь только гасим мобильное меню,

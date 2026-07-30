@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <!-- ?v= сбрасывает кэш браузера после правок: меняйте номер при каждом обновлении файла -->
-<link rel="stylesheet" href="css/style.css?v=17">
+<link rel="stylesheet" href="css/style.css?v=18">
 </head>
 <body>
 
@@ -864,23 +864,77 @@
   <div class="container">
     <div class="section__head">
       <h2 class="section__title">Подарочные сертификаты</h2>
+      <p class="section__sub">
+        Номинал от 1 000 до 20 000 ₽. Действует на любые услуги и товары барбершопа,
+        срок действия не ограничен.
+      </p>
     </div>
 
-    <div class="split">
-      <div class="split__media split__media--single">
-        <img src="img/gift-card-fixed-2.webp" alt="Подарочный сертификат барбершопа Double Cuts" loading="lazy">
+    <div class="cert-grid" id="certGrid">
+      <article class="cert-card">
+        <div class="cert-card__img"><img src="img/gift-card-fixed-2.webp" alt="Подарочный сертификат Double Cuts номиналом 1000 рублей" loading="lazy"></div>
+        <div class="cert-card__body">
+          <div class="cert-card__amount">1 000 ₽</div>
+          <p class="cert-card__desc">Хватит на коррекцию стрижки или бритьё бороды — хороший повод попробовать барбершоп.</p>
+          <button class="btn btn--primary btn--wide cert-buy" type="button" data-amount="1000">Купить</button>
+        </div>
+      </article>
+
+      <article class="cert-card">
+        <div class="cert-card__img"><img src="img/gift-card-fixed-2.webp" alt="Подарочный сертификат Double Cuts номиналом 3000 рублей" loading="lazy"></div>
+        <div class="cert-card__body">
+          <div class="cert-card__amount">3 000 ₽</div>
+          <p class="cert-card__desc">На стрижку у старшего барбера или комбо «стрижка + борода».</p>
+          <button class="btn btn--primary btn--wide cert-buy" type="button" data-amount="3000">Купить</button>
+        </div>
+      </article>
+
+      <article class="cert-card">
+        <div class="cert-card__img"><img src="img/gift-card-fixed-2.webp" alt="Подарочный сертификат Double Cuts номиналом 5000 рублей" loading="lazy"></div>
+        <div class="cert-card__body">
+          <div class="cert-card__amount">5 000 ₽</div>
+          <p class="cert-card__desc">На визит у шеф-барбера с уходом за лицом или головой.</p>
+          <button class="btn btn--primary btn--wide cert-buy" type="button" data-amount="5000">Купить</button>
+        </div>
+      </article>
+
+      <article class="cert-card">
+        <div class="cert-card__img"><img src="img/gift-card-fixed-2.webp" alt="Подарочный сертификат Double Cuts номиналом 10 000 рублей" loading="lazy"></div>
+        <div class="cert-card__body">
+          <div class="cert-card__amount">10 000 ₽</div>
+          <p class="cert-card__desc">На несколько визитов или один — у бренд-барбера с полным уходом.</p>
+          <button class="btn btn--primary btn--wide cert-buy" type="button" data-amount="10000">Купить</button>
+        </div>
+      </article>
+
+      <article class="cert-card">
+        <div class="cert-card__img"><img src="img/gift-card-fixed-2.webp" alt="Подарочный сертификат Double Cuts номиналом 20 000 рублей" loading="lazy"></div>
+        <div class="cert-card__body">
+          <div class="cert-card__amount">20 000 ₽</div>
+          <p class="cert-card__desc">Максимальный номинал — щедрый подарок на несколько посещений.</p>
+          <button class="btn btn--primary btn--wide cert-buy" type="button" data-amount="20000">Купить</button>
+        </div>
+      </article>
+    </div>
+
+    <button class="btn btn--ghost cert-more" id="certMore" type="button" aria-expanded="false">Показать ещё номиналы</button>
+
+    <div class="features cert-formats">
+      <div class="feature">
+        <h3>Электронный</h3>
+        <p>Придёт в Telegram за несколько минут — можно сразу дарить.</p>
       </div>
-      <div>
-        <div class="split__stat">1 000 — 20 000 ₽</div>
-        <p>Номинал на выбор. Сертификат действует на любые услуги барбершопа.</p>
-        <p>
-          Три формата: <strong>физический</strong> — красивая карта в конверте,
-          <strong>электронный</strong> — приходит в мессенджер за пару минут,
-          <strong>корпоративный</strong> — для команды, с закрывающими документами.
-        </p>
-        <a class="btn btn--primary" href="https://doublecuts.ru/sertificate/" target="_blank" rel="noopener">Оформить сертификат</a>
+      <div class="feature">
+        <h3>Физический</h3>
+        <p>Красивая карта — оформим у администратора в барбершопе.</p>
+      </div>
+      <div class="feature">
+        <h3>Корпоративный</h3>
+        <p>Для команды — обсудим номинал, количество и закрывающие документы.</p>
       </div>
     </div>
+
+    <p class="section__note">Формат сертификата и способ оплаты (СБП, «Мир», Visa) уточним при оформлении.</p>
   </div>
 </section>
 
@@ -1088,7 +1142,7 @@
 }
 </script>
 
-<script src="js/main.js?v=14"></script>
+<script src="js/main.js?v=15"></script>
 <script src="js/booking-data.js?v=3"></script>
 <script src="js/booking.js?v=6"></script>
 </body>
