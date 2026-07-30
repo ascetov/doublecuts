@@ -8,8 +8,8 @@
       и не показывает — только реальные рабочие часы.
    2. Поэтому выбранное время — ПРЕДВАРИТЕЛЬНОЕ, это явно написано гостю.
       Никакой формы с отправкой нет: последний шаг — сводка выбора и две
-      равнозначные кнопки, «Позвонить» и «Написать в Telegram» (открывает
-      чат https://t.me/doublecuts с готовым текстом заявки — гость сам
+      равнозначные кнопки, «Написать в Telegram» (открывает чат
+      https://t.me/doublecuts с готовым текстом заявки — гость сам
       отправляет и уточняет, свободно ли время). YClients — запасной
       вариант записи на этом же шаге, кнопкой поменьше.
    3. Слот показывается в списке, только если суммарная длительность ВСЕХ
@@ -370,8 +370,8 @@
       summaryHTML() +
       '<p class="text">Это предварительное время. Уточните его доступность у администратора — так быстрее всего:</p>' +
       '<div class="contact-actions">' +
-        '<a class="btn btn--primary" href="' + D.contacts.phoneHref + '">Позвонить</a>' +
         '<a class="btn btn--primary" href="' + telegramUrl + '" target="_blank" rel="noopener">Написать в Telegram</a>' +
+        '<a class="btn btn--primary" href="' + D.contacts.phoneHref + '">Позвонить</a>' +
       '</div>' +
       '<div class="contact-actions contact-actions--secondary">' +
         '<a class="btn btn--ghost btn--sm" href="' + (b.yclients || D.contacts.yclients) + '" target="_blank" rel="noopener">Или запись через YClients</a>' +

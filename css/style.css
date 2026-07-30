@@ -550,6 +550,7 @@ h1,h2,h3,h4{
   font-family:Oswald, Arial, sans-serif; font-size:18px;
   text-transform:uppercase; letter-spacing:.05em;
 }
+.vacancy__actions{ display:flex; gap:14px; flex-wrap:wrap; }
 
 /* ---------------- Контакты ---------------- */
 

@@ -226,6 +226,21 @@
     bottombar.classList.add('is-visible');
   }
 
+  /* ---------------- Нижняя панель: «Записаться» прячем, пока на экране карточка барбера со своей кнопкой ---------------- */
+  var bottombarBookBtn = bottombar ? bottombar.querySelector('.js-booking') : null;
+  var masterBookButtons = document.querySelectorAll('.master .js-booking');
+  if (bottombarBookBtn && masterBookButtons.length && 'IntersectionObserver' in window) {
+    var visibleMasterBtns = new Set();
+    var masterBtnObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) visibleMasterBtns.add(entry.target);
+        else visibleMasterBtns.delete(entry.target);
+      });
+      bottombarBookBtn.hidden = visibleMasterBtns.size > 0;
+    });
+    masterBookButtons.forEach(function (btn) { masterBtnObserver.observe(btn); });
+  }
+
   /* ---------------- Запись: закрываем бургер-меню, когда открывается визард ----------------
      Сама запись (мастер, услуги, календарь занятости) — отдельный модуль,
      см. booking-data.js и booking.js. Здесь только гасим мобильное меню,
